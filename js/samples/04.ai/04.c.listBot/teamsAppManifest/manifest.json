@@ -40,7 +40,7 @@
     ],
     "bots": [
       {
-        "botId": "de866002-27f9-43a5-8d5d-9c4ad8a012e0",
+        "botId": "___YOUR BOTS ID___",
         "scopes": [
           "personal",
           "team",
