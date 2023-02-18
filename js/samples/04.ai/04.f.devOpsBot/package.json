@@ -1,7 +1,7 @@
 {
-    "name": "listBot-demo",
+    "name": "devOpsBot-demo",
     "version": "1.0.0",
-    "description": "A bot that can manage lists of items",
+    "description": "Sample AI bot managing work items",
     "author": "Microsoft",
     "license": "MIT",
     "main": "./lib/index.js",
