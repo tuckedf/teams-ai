@@ -10,23 +10,20 @@
 /**
  * Represents a strongly typed vector of numeric data.
  */
-export class Embedding implements IEquatable {
+export class Embedding {
+    private readonly _vector: number[];
+
     /**
-     * An empty Embedding<TData> instance.
+     * An empty Embedding instance.
      */
     public static readonly Empty: Embedding = new Embedding([]);
 
     /**
-     * Initializes a new instance of the Embedding<TData> class that contains numeric elements copied from the specified collection.
+     * Initializes a new instance of the Embedding class that contains numeric elements copied 
+     * from the specified collection.
      * @param vector The source data.
-     * @throws {ArgumentException} An unsupported type is used as TData.
-     * @throws {ArgumentNullException} A null vector is passed in.
      */
-    constructor(vector: IEnumerable<TData>) {
-        if (!Embedding.isSupported) {
-            throw new Error(`Embeddings do not support type '${typeof(TData).name}'. Supported types include: [ ${Embedding.SupportedTypes.map(t => t.name).join(', ')} ]`);
-        }
-
+    constructor(vector: number[]) {
         // Create a local, protected copy
         this._vector = [...vector];
     }
@@ -34,15 +31,8 @@ export class Embedding implements IEquatable {
     /**
      * Gets the vector as a ReadOnlyCollection<T>.
      */
-    public get vector(): IEnumerable<TData> {
+    public get vector(): ReadonlyArray<number> {
         return this._vector;
-    }
-
-    /**
-     * Gets a value that indicates whether TData is supported.
-     */
-    public static get isSupported(): boolean {
-        return Embedding.SupportedTypes.includes(typeof(TData));
     }
 
     /**
@@ -60,36 +50,24 @@ export class Embedding implements IEquatable {
     }
 
     /**
-     * Gets the vector as a read-only span.
-     */
-    public asReadOnlySpan(): Readonly<TData[]> {
-        return this._vector;
-    }
-
-    /**
-     * Serves as the default hash function.
-     * @returns A hash code for the current object.
-     */
-    public getHashCode(): number {
-        return this._vector.getHashCode();
-    }
-
-    /**
-     * Determines whether two object instances are equal.
-     * @param obj The object to compare with the current object.
-     * @returns true if the specified object is equal to the current object; otherwise, false.
-     */
-    public equals(obj: any): boolean {
-        return (obj instanceof Embedding<TData>) && this.equals(obj);
-    }
-
-    /**
      * Compares two embeddings for equality.
-     * @param other The Embedding<TData> to compare with the current object.
+     * @param other The Embedding to compare with the current object.
      * @returns true if the specified object is equal to the current object; otherwise, false.
      */
-    public equals(other: Embedding<TData>): boolean {
-        return this._vector.equals(other._vector);
+    public equals(other: Embedding|object): boolean {
+        if (other instanceof Embedding) {
+            if (other._vector.length !== this._vector.length) {
+                return false;
+            }
+            
+            for (let i = 0; i < other._vector.length; i++) {
+                if (other._vector[i] !== this._vector[i]) {
+                  return false;
+                }
+            }
+            
+            return true;
+        }
     }
 
     /**
@@ -98,7 +76,7 @@ export class Embedding implements IEquatable {
      * @param right The right Embedding<TData>.
      * @returns true if the embeddings contain identical data; false otherwise
      */
-    public static equals(left: Embedding<TData>, right: Embedding<TData>): boolean {
+    public static equals(left: Embedding, right: Embedding): boolean {
         return left.equals(right);
     }
 
@@ -106,8 +84,8 @@ export class Embedding implements IEquatable {
      * Implicit creation of an Embedding<TData> object from an array of data.>
      * @param vector An array of data.
      */
-    public static fromArray<TData>(vector: TData[]): Embedding<TData> {
-        return new Embedding<TData>(vector);
+    public static fromArray(vector: number[]): Embedding {
+        return new Embedding(vector);
     }
 
     /**
@@ -115,7 +93,7 @@ export class Embedding implements IEquatable {
      * @param embedding Source Embedding<TData>.
      * @remarks A clone of the underlying data.
      */
-    public static toArray<TData>(embedding: Embedding<TData>): TData[] {
+    public static toArray(embedding: Embedding): number[] {
         return [...embedding._vector];
     }
 
@@ -124,13 +102,7 @@ export class Embedding implements IEquatable {
      * @param embedding Source Embedding<TData>.
      * @remarks A clone of the underlying data.
      */
-    public static toReadOnlySpan<TData>(embedding: Embedding<TData>): Readonly<TData[]> {
+    public static toReadOnlySpan(embedding: Embedding): Readonly<number[]> {
         return [...embedding._vector];
     }
-
-    #region private ================================================================================
-
-    private readonly _vector: TData[];
-
-    #endregion
 }
