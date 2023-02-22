@@ -7,3 +7,9 @@
  */
 
 export * from './Embedding';
+export * from './EmbeddingReadOnlySpan';
+export * from './EmbeddingSpan';
+export * from './IEmbeddingGenerator';
+export * from './IEmbeddingIndex';
+export * from './IEmbeddingWithMetadata';
+export * from './VectorOperations';

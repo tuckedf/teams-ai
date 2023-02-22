@@ -6,13 +6,14 @@
  * Licensed under the MIT License.
  */
 
-import { KernelConfig } from "./Configuration";
+import { CompleteRequestSettings } from "./AI";
+import { BackendTypes, KernelConfig } from "./Configuration";
 import { Verify } from "./Diagnostics";
 import { IKernel } from "./IKernal";
 import { CaseInsensitiveMap } from "./Internals";
 import { ILogger, NullLogger } from "./Logger";
-import { ContextVariables, ISKFunction, SKContext, SKFunctionExtensions } from "./Orchestration";
-import { FunctionRegistry, IFunctionRegistry, IFunctionRegistryReader } from "./Registry";
+import { ContextVariables, ISKFunction, SKContext, SKFunction } from "./Orchestration";
+import { FunctionRegistry, IFunctionRegistry, IFunctionRegistryReader, SKFunction } from "./Registry";
 import { ISemanticFunctionConfig } from "./SemanticFunctions";
 import { IPromptTemplateEngine, PromptTemplateEngine } from "./TemplateEngine";
 
@@ -93,44 +94,39 @@ export class Kernel implements IKernel {
       }
   
       const skill = new CaseInsensitiveMap<string, ISKFunction>();
-      const functions = ImportSkill(skillInstance, skillName, this._log);
+      const functions = Kernal.importSkill(skillInstance, skillName, this._log);
       for (const f of functions) {
-        f.SetDefaultFunctionRegistry(this.FunctionRegistryReader);
+        f.setDefaultFunctionRegistry(this.functionRegistryReader);
         this._functionRegistry.RegisterNativeFunction(f);
-        skill.Add(f.Name, f);
+        skill.Add(f.name, f);
       }
   
       return skill;
     }
   
     public async run(variables: ContextVariables, ...pipeline: ISKFunction[]): Promise<SKContext> {
-      let executionContext = new SKContext(variables, this._functionRegistry.functionRegistryReader, this._log, cancellationToken);
+      let executionContext = new SKContext(variables, this._functionRegistry.functionRegistryReader, this._log);
   
       let pipelineStepCount = -1;
       for (const f of pipeline) {
-        if (executionContext.ErrorOccurred) {
-          this._log.LogError(
-            executionContext.LastException,
-            "Something went wrong in pipeline step {0}:'{1}'", pipelineStepCount, executionContext.LastErrorDescription);
+        if (executionContext.errorOccurred) {
+          this._log.error(`Something went wrong in pipeline step ${pipelineStepCount}:'${executionContext.lastErrorDescription}'`);
           return executionContext;
         }
   
         pipelineStepCount++;
   
         try {
-          cancellationToken.ThrowIfCancellationRequested();
-          executionContext = await f.InvokeAsync(executionContext);
+          executionContext = await f.invoke(executionContext);
   
-          if (executionContext.ErrorOccurred) {
-            this._log.LogError("Function call fail during pipeline step {0}: {1}.{2}", pipelineStepCount, f.SkillName, f.Name);
+          if (executionContext.errorOccurred) {
+            this._log.error(`Function call fail during pipeline step ${pipelineStepCount}: ${f.skillName}.${f.name}`);
             return executionContext;
           }
-        } catch (e) {
-          if (!e.IsCriticalException()) {
-            this._log.LogError(e, "Something went wrong in pipeline step {0}: {1}.{2}. Error: {3}", pipelineStepCount, f.SkillName, f.Name, e.Message);
-            executionContext.Fail(e.Message, e);
-            return executionContext;
-          }
+        } catch (err: any) {
+          this._log.error(`Something went wrong in pipeline step ${pipelineStepCount}: ${f.skillName}.${f.name}. Error: ${(err as Error).toString()}`);
+          executionContext.fail((err as Error).toString(), err);
+          return executionContext;
         }
       }
   
@@ -145,7 +141,7 @@ export class Kernel implements IKernel {
         return this.functionRegistryReader.getSemanticFunction(skillName, functionName);
     }
 
-    private CreateSemanticFunction(
+    private createSemanticFunction(
         skillName: string,
         functionName: string,
         functionConfig: ISemanticFunctionConfig
@@ -155,33 +151,33 @@ export class Kernel implements IKernel {
             throw new Error(`Function type not supported: ${functionConfig.promptTemplateConfig}`);
         }
 
-        const func: ISKFunction = SKFunctionExtensions.FromSemanticConfig(skillName, functionName, functionConfig);
-        func.RequestSettings.UpdateFromCompletionConfig(functionConfig.PromptTemplateConfig.Completion);
+        const func: ISKFunction = SKFunction.fromSemanticConfig(skillName, functionName, functionConfig);
+        CompleteRequestSettings.updateFromCompletionConfig(func.requestSettings, functionConfig.promptTemplateConfig.completion);
 
         // Connect the function to the current kernel registry, in case the function
         // is invoked manually without a context and without a way to find other functions.
-        func.SetDefaultFunctionRegistry(this.FunctionRegistryReader);
+        func.setDefaultFunctionRegistry(this.functionRegistryReader);
 
         // TODO: allow to postpone this, so that semantic functions can be created without a default backend
-        const backend = this._config.GetCompletionBackend(functionConfig.PromptTemplateConfig.DefaultBackends[0]);
+        const backend = this._config.getCompletionBackend(functionConfig.promptTemplateConfig.default_backends[0]);
 
-        func.SetAIConfiguration(CompleteRequestSettings.FromCompletionConfig(functionConfig.PromptTemplateConfig.Completion));
+        func.setAIConfiguration(CompleteRequestSettings.fromCompletionConfig(functionConfig.promptTemplateConfig.completion));
 
-        switch (backend.BackendType) {
+        switch (backend.backendType) {
             case BackendTypes.AzureOpenAI:
-                Verify.NotNull(backend.AzureOpenAI, "Azure OpenAI configuration is missing");
-                func.SetAIBackend(() => new AzureTextCompletion(
+                Verify.notNull(backend.azureOpenAI, "Azure OpenAI configuration is missing");
+                func.setAIBackend(() => new AzureTextCompletion(
                     backend.AzureOpenAI.DeploymentName,
                     backend.AzureOpenAI.Endpoint,
                     backend.AzureOpenAI.APIKey,
                     backend.AzureOpenAI.APIVersion,
                     this._log
-                ));
+                ) as IAz);
                 break;
 
             case BackendTypes.OpenAI:
-                Verify.NotNull(backend.OpenAI, "OpenAI configuration is missing");
-                func.SetAIBackend(() => new OpenAITextCompletion(
+                Verify.notNull(backend.OpenAI, "OpenAI configuration is missing");
+                func.setAIBackend(() => new OpenAITextCompletion(
                     backend.OpenAI.ModelId,
                     backend.OpenAI.APIKey,
                     backend.OpenAI.OrgId,
@@ -190,31 +186,30 @@ export class Kernel implements IKernel {
                 break;
 
             default:
-                throw new AIException(
-                    AIException.ErrorCodes.InvalidConfiguration,
-                    `Unknown/unsupported backend type ${backend.BackendType}, unable to prepare semantic function. ` +
-                    `Function description: ${functionConfig.PromptTemplateConfig.Description}`
+                throw new Error(
+                    `Unknown/unsupported backend type ${backend.backendType}, unable to prepare semantic function. ` +
+                    `Function description: ${functionConfig.promptTemplateConfig.description}`
                 );
         }
 
         return func;
     }
 
-    private static ImportSkill(skillInstance: any, skillName: string, log: ILogger): ISKFunction[] {
+    private static importSkill(skillInstance: any, skillName: string, log: ILogger): ISKFunction[] {
         log.LogTrace("Importing skill: {0}", skillName);
         const methods: MethodInfo[] = skillInstance.constructor
             .getMethods(BindingFlags.Static | BindingFlags.Instance | BindingFlags.Public | BindingFlags.InvokeMethod);
         log.LogTrace("Methods found {0}", methods.length);
 
         // Filter out null functions
-        const functions: ISKFunction[] = methods.map(method => SKFunction.FromNativeMethod(method, skillInstance, skillName, log));
+        const functions: ISKFunction[] = methods.map(method => SKFunction.fromNativeMethod(method, skillInstance, skillName, log));
         const result: ISKFunction[] = functions.filter(function => function !== null);
 
         // Fail if two functions have the same name
-        const uniquenessCheck: Set<string> = new Set(result.map(x => x.Name), StringComparer.OrdinalIgnoreCase);
+        const uniquenessCheck: Set<string> = new Set(result.map(x => x.name), StringComparer.OrdinalIgnoreCase);
         if (result.length > uniquenessCheck.size) {
             throw new KernelException(
-                KernelException.ErrorCodes.FunctionOverloadNotSupported,
+                KernelException.ErrorCodes.functionOverloadNotSupported,
                 "Function overloads are not supported, please differentiate function names"
             );
         }
