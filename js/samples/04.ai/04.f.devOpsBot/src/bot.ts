@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 import { Application, DefaultTurnState, OpenAIPredictionEngine, AI } from 'botbuilder-m365';
-import { MemoryStorage } from 'botbuilder';
+import { ActionTypes, ActivityTypes, MemoryStorage } from 'botbuilder';
 import * as path from 'path';
 import * as responses from './responses';
 
@@ -40,7 +40,17 @@ interface ConversationState {
     listNames: string[];
     lists: Record<string, string[]>;
 }
-type ApplicationTurnState = DefaultTurnState<ConversationState>;
+
+interface UserState {
+
+}
+
+interface TempState {
+    now: string;
+    lists?: Record<string, string[]>;
+}
+
+type ApplicationTurnState = DefaultTurnState<ConversationState, UserState, TempState>;
 
 // Define storage and application
 const storage = new MemoryStorage();
@@ -52,6 +62,23 @@ const app = new Application<ApplicationTurnState>({
 // Export bots run() function
 export const run = (context) => app.run(context);
 
+app.turn('beforeTurn', async (context, state) => {
+    if (context.activity.type == ActivityTypes.Message) {
+        // Initialize computed values for prompt
+        state.temp.value.now = new Date().toISOString();
+
+        // Ensure conversation state initialized
+        if (!Array.isArray(state.conversation.value.listNames)) {
+            state.conversation.value.listNames = [];
+        }
+
+        if (typeof state.conversation.value.lists != 'object') {
+            state.conversation.value.lists = {};
+        }
+    }
+
+    return true;
+});
 
 // Define an interface to strongly type data parameters for actions
 interface EntityData {
@@ -112,7 +139,7 @@ app.ai.action('findItem', async (context, state, data: EntityData) => {
 });
 
 app.ai.action('summarizeLists', async (context, state, data: EntityData) => {
-    data.lists = state.conversation.value.lists;
+    state.temp.value.lists = state.conversation.value.lists;
     if (data.lists) {
         // Chain into a new summarization prompt
         await app.ai.chain(
@@ -128,8 +155,7 @@ app.ai.action('summarizeLists', async (context, state, data: EntityData) => {
                     frequency_penalty: 0,
                     presence_penalty: 0
                 }
-            },
-            data
+            }
         );
     } else {
         await context.sendActivity(responses.noListsFound());
