@@ -36,6 +36,48 @@ State each step and show your work for performing that step.​
 1: generate a list of all the words in the text block and the index. Don't skip any words and don't write code.
 ```
 
+## Complex Reasoning
+The correct answer for the prompt below is `25`.
+
+```
+A water slide ride takes 30 seconds and it takes one minute to climb to the top of the slide. Only one person can ride the slide at a time. The first time Alice rode there were 5 people in line but there's 1 less each time she rides. The park closes in 45 minutes. How many more times can Alice ride the slide?
+
+steps:​
+- How long does it take for a person to ride the slide?
+- How long does it take Alice to ride the slide? Factor in her climbing time.
+- Create a table showing the amount of time she would wait for other riders each time she rides. Assume this decresses by one person each time down to 0.
+- Create a table showing the amount of time it takes Alice to climb the stairs, wait for other riders, and then ride on each run. Add a column that subtracts this time from the time remaining before the park closes. Continue the table until the time remaining is <= 0
+- If Alice doesn't have enough time to ride on her last ride then subtract 1 from the total number of rides.
+- Answer the question and begin your answer with <response>.​
+
+State each step and show your work for performing that step.​
+
+1: How long does it take for a person to ride the slide?
+```
+
+And here's the `text-davinci-003` solution to the same problem:
+
+```
+A water slide ride takes 30 seconds and it takes one minute to climb to the top of the slide. Only one person can ride the slide at a time. The first time Alice rode there were 5 people in line but there's 1 less each time she rides. The park closes in 45 minutes. How many more times can Alice ride the slide?
+
+steps:​
+- How long does it take for a person to ride the slide?
+- How long does it take Alice to ride the slide? Factor in her climbing time.
+- Create a table with "people" and "wait time" columns. Assume the number of people decresses by one person each time down to 0. The wait time is (people * ride time). 
+- How long before the park closes in seconds?
+- Create a table with "run", "wait time", "ride time", "climb time", "total time", and "time remaining" columns.  The total time is (wait time + ride time + climb time). 
+- How much time is remaining before the park closes, how many people are in line, and how many runs did she make?
+- How much is Alices ride + climb time in seconds?
+- Create an array of decreasing numbers. The array should start with time remaining and decrease by Alices (ride + climb time) until it reaches 0. 
+- Count the number of entries in the array.
+- Add that count to the previous run count and subtract 1.
+- Answer the question and begin your answer with <response>.​
+
+State each step and show your work for performing that step.​
+
+1: How long does it take for a person to ride the slide?
+```
+
 ## Playing Risk
 
 ### Calculating Player Reinforcements
