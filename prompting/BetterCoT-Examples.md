@@ -20,9 +20,9 @@ The correct answer below is `$45,000`
 Valerie earns $5000 per month, 1/2 of what her brother earns. If their mother earns twice their combined salary, what's the total amount of money they all have together?
 
 steps:
-generate a plan for answering the question without using code.
-execute each step of the plan and show your work.
-answer the question and begin your answer with <response>.
+- generate a plan for answering the question without using code.
+- execute each step of the plan and show your work.
+- answer the question and begin your answer with <response>.
 
 State each step and show your work for performing that step.
 
