@@ -6,7 +6,7 @@ It's such a cruel world
 
 steps:​
 - think about how you would say hello world in the context of the query
-- answer the question and begin your answer with <response>.​
+- pick your favorite and answer the question. begin your answer with <response>.​
 
 State each step and show your work for performing that step.​
 
