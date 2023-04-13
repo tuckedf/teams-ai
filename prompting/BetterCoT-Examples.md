@@ -244,6 +244,76 @@ State each step and then show your work for performing the step.
 1: generate a plan for answering the question.
 ```
 
+## Generic Intent & Entity Recognition
+GPT-4 version:
+```
+Intents Supported:
+- BookFlight
+- BookCar
+- BookHotel
+- None
+
+Entities Supported:
+- Origin - validation(must be a city)
+- Destination - validation(must be a city)
+- StartDate - validation(must be a date)
+- EndDate - validation(must be a date)
+
+Response Schema:
+{"type":"recognized","intent": "<intent>", "entities":[{"<name>":"<value>"}]}
+
+query:
+I'd like to book a flight for 4 to seattle
+
+steps:
+- is the query related to the list of supported intents? If not use the None intent.
+- recognize the queries intent and extract any entities.
+- compare the recognized intent and entities with the list of supported intents and entities. 
+- were any additional intents or entities used?
+- run each recognized entities validation rule.
+- update the recognition results to only use available intents and entities if needed. Remove any invalid entities.
+- return the results as JSON. Return the tag <response> just before the JSON.
+
+State each step and show your work for performing the step.
+
+1: is the query related to the list of supported intents? If not use the None intent.
+```
+
+text-davinci-003 version:
+```
+Intents Supported:
+- BookFlight
+- BookCar
+- BookHotel
+- None
+
+Entities Supported:
+- Origin - validation(must be a city)
+- Destination - validation(must be a city)
+- StartDate - validation(must be a date)
+- EndDate - validation(must be a date)
+
+Response Schema:
+{"type":"recognized","intent": "<intent>", "entities":[{"<name>":"<value>"}]}
+
+query:
+I'd like to book a flight for 4 to seattle
+
+steps:
+- is the query related to the list of supported intents? If not use the None intent.
+- recognize the queries intent and extract any entities.
+- compare the recognized intent and entities with the list of supported intents and entities. 
+- were any additional intents or entities used?
+- update the recognition results to only use available intents and entities if needed. 
+- run each recognized entities validation rule.
+- update the recognition results to emove any invalid entities.
+- return the results as JSON. Return the tag <response> just before the JSON.
+
+State each step and show your work for performing the step.
+
+1: is the query related to the list of supported intents? If not use the None intent.
+```
+
 ## Playing Risk
 
 ### Calculating Player Reinforcements
