@@ -94,6 +94,7 @@ State each step and show your work for performing the step.
 1: generate a plan for answering the query.
 ```
 
+## Combining Words
 The correct answer for the prompt below is `mhs`
 
 ```
