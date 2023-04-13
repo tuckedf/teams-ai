@@ -113,7 +113,7 @@ State each step and show your work for performing that step.​
 ## Counting Words
 The correct answer for the prompt below is `80`.
 
-GPT-4 version:
+GPT-4 and GPT-3.5 version:
 ```
 Text:
 Nullam elementum vel odio vestibulum auctor. Sed molestie quam in orci rhoncus, non semper arcu laoreet. Aenean condimentum tristique lacus in ultrices. In egestas nisl nec ligula lacinia consectetur. Etiam non diam vel lacus maximus viverra. Fusce scelerisque efficitur lectus ut mollis. Suspendisse efficitur metus sit amet turpis blandit faucibus commodo vel metus.
