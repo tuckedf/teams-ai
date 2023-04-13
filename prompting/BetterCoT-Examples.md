@@ -113,6 +113,7 @@ State each step and show your work for performing that step.​
 ## Counting Words
 The correct answer for the prompt below is `80`.
 
+GPT-4 version:
 ```
 Text:
 Nullam elementum vel odio vestibulum auctor. Sed molestie quam in orci rhoncus, non semper arcu laoreet. Aenean condimentum tristique lacus in ultrices. In egestas nisl nec ligula lacinia consectetur. Etiam non diam vel lacus maximus viverra. Fusce scelerisque efficitur lectus ut mollis. Suspendisse efficitur metus sit amet turpis blandit faucibus commodo vel metus.
@@ -130,6 +131,26 @@ steps:​
 State each step and show your work for performing that step.​
 
 1: generate a list of all the words in the text block and the index. Don't skip any words and don't write code.
+```
+
+text-davinci-003 version:
+```
+Text:
+Nullam elementum vel odio vestibulum auctor. Sed molestie quam in orci rhoncus, non semper arcu laoreet. Aenean condimentum tristique lacus in ultrices. In egestas nisl nec ligula lacinia consectetur. Etiam non diam vel lacus maximus viverra. Fusce scelerisque efficitur lectus ut mollis. Suspendisse efficitur metus sit amet turpis blandit faucibus commodo vel metus.
+
+Quisque a consectetur sem, sit amet pharetra nibh. Aliquam non mi nec orci laoreet vulputate sed nec felis. Maecenas consequat libero ut auctor condimentum. Sed auctor dui.
+
+Question:
+How many words are in the text above?
+
+steps:​
+- create an array with all the words in the text block. Include the index of each word.
+- count how many words are in the array.
+- answer the question and begin your answer with <response>.​
+
+State each step and show your work for performing that step.​
+
+1: create an array with all the words in the text block. Include the index of each word.
 ```
 
 ## Complex Reasoning
