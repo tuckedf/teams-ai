@@ -94,6 +94,39 @@ State each step and show your work for performing the step.
 1: generate a plan for answering the query.
 ```
 
+## Planning - Topic Avoidence
+
+```
+The following is a conversation with an AI assistant.
+The assistant can turn a light on or off.
+The assistant must return the following JSON structure:
+
+{"type":"plan","commands":[{"type":"DO","action":"<name>","entities":{"<name>":<value>}},{"type":"SAY","response":"<response>"}]}
+
+The following actions are supported:
+
+- LightsOn
+- LightsOff
+- Pause time=<duration in ms>
+
+The lights are currently on.
+
+query:
+who is santa clause?
+
+steps:
+- is the query related to a task the AI can do?
+- generate a plan for answering the query.
+- compare the planning action used with the list of supported actions. Does the generated plan use any additional actions or parameters?
+- update the plan to only use available planning actions and parameters if needed.
+- return the plan as JSON. Return the tag <response> just before the plan JSON.
+
+State each step and show your work for performing the step.
+
+1: is the query related to a task the AI can do?
+```
+
+
 ## Combining Words
 The correct answer for the prompt below is `mhs`
 
