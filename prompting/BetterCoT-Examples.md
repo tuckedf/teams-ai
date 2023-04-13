@@ -108,6 +108,7 @@ The following actions are supported:
 - LightsOn
 - LightsOff
 - Pause time=<duration in ms>
+- None
 
 The lights are currently on.
 
@@ -115,7 +116,7 @@ query:
 who is santa clause?
 
 steps:
-- is the query related to a task the AI can do?
+- is the query related to a task the AI can do? If not use the None action.
 - generate a plan for answering the query.
 - compare the planning action used with the list of supported actions. Does the generated plan use any additional actions or parameters?
 - update the plan to only use available planning actions and parameters if needed.
@@ -123,7 +124,7 @@ steps:
 
 State each step and show your work for performing the step.
 
-1: is the query related to a task the AI can do?
+1: is the query related to a task the AI can do? If not use the None action.
 ```
 
 
