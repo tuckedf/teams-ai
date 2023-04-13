@@ -123,7 +123,7 @@ Question:
 How many words are in the text above?
 
 steps:​
-- generate a list of all the words in the text block and the index. Don't skip any words and don't write code.
+- generate a list of all the words in the text block and the index. Don't skip any words but ignore punctuation. Don't write code.
 - the word count is the last index + 1.
 - answer the question and begin your answer with <response>.​
 
