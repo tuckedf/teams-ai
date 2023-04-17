@@ -1,0 +1,71 @@
+<fragements>
+name: selfPlanning
+use: lets the model generate its own plan that it executes
+category: planning
+program:
+- generate a plan for answering the question without using code.
+- execute each step of the plan and show your work without using code.
+
+name: actionPlanning
+use: generate a JSON plan for collecting user input and then running an action. the plan will avoid hallucinations.
+category: planning
+program:
+- does the memory contain all of the entities needed for the goalAction?
+- generate a plan that uses SAY to ask for missing values or DO the goalAction if all entities are known.
+- compare the planning actions used with the list of supported actions. Does the generated plan use any additional actions or parameters?
+- update the plan to only use available planning actions and parameters if needed.
+schema:
+- plan
+context:
+ actions supported:
+ - updateMemory {entityName}="{value}"
+ - {actionName}
+ - {actionName} {entityName}={type}
+ memory:
+  goalAction=null
+  {entityName}=null
+
+name: textHallucinations.
+use: used in Q&A scenarions to avoid hallucinations
+category: hallucinations
+program:
+- what facts do you need to look for in the text to answer the input question?​
+- Does the text contain all the facts needed to answer the input question? ​
+- Think about how you might answer the input question given what you know. If you don't have enough facts answer I'm not sure.​
+context:
+ text:
+  {{$text}}
+
+name: textResponse
+use: generate a final text answer
+category: response
+program:
+- say RESPONSE and then return your answer.​
+
+name: jsonResponse
+use: generate a final JSON answer
+category: response
+program:
+- say RESPONSE and return the created JSON object.​
+</fragements>
+
+<schema>
+plan: {"type":"plan","commands":[{"type":"DO","action":"<name>","entities":{"<name>":<value>}},{"type":"SAY","response":"<response>"}]}
+</schema>
+
+<request>
+create a flight booking prompt that collects input from a user before calling a bookFlight action.
+</request>
+
+program:
+- think about the types of steps needed to create a prompt based on the request
+- select the fragments that best fit those steps. Only one fragment from a category should be chosen unless from the "utility" category.
+- do any the fragments need schema?
+- create a combined context for all the selected fragements. 
+- build a list of the combined steps from the selected fragements. Expand any {variables} but otherwise don't reword the steps.
+- fill in this JSON object: {"type":"prompt","context":"<context>","schema":"<schema>","steps":"<steps>"} 
+- say RESPONSE and return the JSON object.
+
+State each program step and show your work for performing that step. Perform all steps.
+
+1: think about the types of steps needed to create a prompt based on the input
