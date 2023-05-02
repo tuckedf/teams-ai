@@ -11,11 +11,12 @@ import { randomUUID } from 'crypto';
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
 import {
-    ActivityTypes,
+    CardFactory,
     CloudAdapter,
     ConfigurationBotFrameworkAuthentication,
     ConfigurationBotFrameworkAuthenticationOptions,
     MemoryStorage,
+    MessageFactory,
     TurnContext
 } from 'botbuilder';
 
@@ -81,6 +82,7 @@ import * as responses from './responses';
 import * as moment from 'moment';
 import { Moment } from 'moment';
 import { CronJob } from 'cron';
+import { getRemindersCard } from './cards';
 
 export interface Reminder {
     description: string
@@ -150,23 +152,25 @@ app.message('/reset', async (context: TurnContext, state: ApplicationTurnState) 
     await context.sendActivity(responses.reset());
 });
 
-// app.activity(ActivityTypes.Message, async (context: TurnContext, state: ApplicationTurnState) => {
-//     let activity = Object.assign({}, context.activity);
+app.adaptiveCards.actionSubmit("cancelReminder", async (context: TurnContext, state: ApplicationTurnState, data: any) => {
+    const id = data.id;
     
-//     let job = new CronJob(
-//         new Date(Date.now() + 3000), 
-//         async () => {
-//         let conversationReference = TurnContext.getConversationReference(activity);
-            
-//         await adapter.continueConversationAsync(process.env.MicrosoftAppId!, conversationReference, async turnContext => {
-//             await turnContext.sendActivity(`Proactive Message`);
-//         });
-//         }, 
-//         null, 
-//         true
-//     );
+    if (!id) throw new Error("Reminder id not found in action execute data object.");
+    
+    if (!REMINDERS[id]) {
+        await context.sendActivity("Could not find the cancel to delete");
+        return;
+    }
 
-// })
+    cancelReminder(id);
+    await context.sendActivity(`Successfully deleted reminder: ${data.description}`)
+
+    let card = getRemindersCard(getReminderList())
+    const message = MessageFactory.attachment(CardFactory.adaptiveCard(card))
+    message.id = context.activity.replyToId;
+    
+    context.updateActivity(message);
+})
 
 // Register action handlers
 app.ai.action('CreateReminder', async (context: TurnContext, state: ApplicationTurnState, data: CreateReminderEntityData) => {
@@ -189,12 +193,15 @@ app.ai.action('CreateReminder', async (context: TurnContext, state: ApplicationT
     return true;
 });
 
-// app.ai.action('CancelReminder', async (context: TurnContext, state: ApplicationTurnState, data: CancelReminderEntityData) => {
-//     return true;
-// });
+app.ai.action('CancelReminder', async (context: TurnContext, state: ApplicationTurnState, data: CancelReminderEntityData) => {
+    return true;
+});
 
 app.ai.action('ViewReminders', async (context: TurnContext, state: ApplicationTurnState, data: undefined) => {
-    await context.sendActivity(responses.listReminders(displayReminder(state)));
+    let card = getRemindersCard(getReminderList())
+
+    const message = MessageFactory.attachment(CardFactory.adaptiveCard(card))
+    await context.sendActivity(message);
     
     return false;
 })
@@ -235,7 +242,7 @@ function addReminder(context: TurnContext, state: ApplicationTurnState, reminder
                 await turnContext.sendActivity(`Reminder: ${reminder.description}`);
             });
 
-            removeReminder(reminder.id);
+            cancelReminder(reminder.id);
 
         }, 
         null, 
@@ -245,22 +252,9 @@ function addReminder(context: TurnContext, state: ApplicationTurnState, reminder
     CRON_JOBS[reminder.id] = job
 }
 
-function removeReminder(id: string): void {   
+function cancelReminder(id: string): void {   
     delete REMINDERS[id]
     delete CRON_JOBS[id]
-}
-
-function displayReminder(state: ApplicationTurnState) {
-    const reminders = getReminderList(state);
-
-    if (!reminders) return "There are no reminders currently set.";
-
-    let str = ""
-    Object.values(reminders).forEach((reminder, i) => {
-        str += `${i}. "${reminder.description}" at ${getDateString(reminder.date)}\n`
-    })
-
-    return str;
 }
 
 function getDate(date: string) : Moment | undefined {
@@ -271,12 +265,6 @@ function getDate(date: string) : Moment | undefined {
     return dateObj;
 }
 
-function getDateString(date: Moment) : string {
-    return moment(date).format("HH:mm Do MMM YYYY");
-}
-
-function getReminderList(state: ApplicationTurnState) : Reminder[] | undefined {
-    if (Object.keys(REMINDERS).length > 0){
-        return Object.values(REMINDERS);
-    };
+function getReminderList() : Reminder[] {
+    return Object.values(REMINDERS);
 }
