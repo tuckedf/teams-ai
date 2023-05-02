@@ -82,7 +82,7 @@ import * as responses from './responses';
 import * as moment from 'moment';
 import { Moment } from 'moment';
 import { CronJob } from 'cron';
-import { getRemindersCard } from './cards';
+import { getReminderCard, getRemindersCard } from './cards';
 
 export interface Reminder {
     description: string
@@ -239,7 +239,9 @@ function addReminder(context: TurnContext, state: ApplicationTurnState, reminder
             let conversationReference = TurnContext.getConversationReference(activity);
                 
             await adapter.continueConversationAsync(process.env.MicrosoftAppId!, conversationReference, async turnContext => {
-                await turnContext.sendActivity(`Reminder: ${reminder.description}`);
+                let card = getReminderCard(reminder.description);
+                let message = MessageFactory.attachment(CardFactory.adaptiveCard(card))
+                await turnContext.sendActivity(message);
             });
 
             cancelReminder(reminder.id);
