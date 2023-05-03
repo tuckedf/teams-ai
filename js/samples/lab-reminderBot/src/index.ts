@@ -71,12 +71,12 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
 import {
     Application,
     DefaultTurnState,
-    OpenAIPlanner,
     AI,
     DefaultConversationState,
     DefaultUserState,
     DefaultTempState,
-    DefaultPromptManager
+    DefaultPromptManager,
+    AzureOpenAIPlanner
 } from '@microsoft/botbuilder-m365';
 import * as responses from './responses';
 import * as moment from 'moment';
@@ -102,16 +102,28 @@ type UserState = DefaultUserState;
 
 type ApplicationTurnState = DefaultTurnState<ConversationState, UserState, DefaultTempState>;
 
-if (!process.env.OpenAIKey) {
-    throw new Error('Missing OpenAIKey environment variable');
+if (!process.env.AzureOpenAIKey) {
+    throw new Error('Missing AzureOpenAIKey environment variable');
 }
 
-// Create AI components
-const planner = new OpenAIPlanner<ApplicationTurnState>({
-    apiKey: process.env.OpenAIKey!,
-    defaultModel: 'text-davinci-003',
-    logRequests: true
-});
+if (!process.env.AzureOpenAIEndpoint) {
+    throw new Error('Missing AzureOpenAIEndpoint environment variable');
+}
+
+const planner = new AzureOpenAIPlanner<ApplicationTurnState>({
+    apiKey: process.env.AzureOpenAIKey!,
+    endpoint: process.env.AzureOpenAIEndpoint!,
+    defaultModel: 'gpt-35-turbo', // <-- AzureOpenAI deployment name
+    logRequests: true 
+})
+
+// # Use the OpenAI endpoint
+// const planner = new OpenAIPlanner<ApplicationTurnState>({
+//     apiKey: process.env.OpenAIKey!,
+//     defaultModel: 'gpt-3.5-turbo',
+//     logRequests: true 
+// })
+
 const promptManager = new DefaultPromptManager<ApplicationTurnState>(path.join(__dirname, '../src/prompts'));
 
 // Define storage and application
@@ -146,9 +158,9 @@ app.conversationUpdate('membersAdded', async (context: TurnContext, state: Appli
     }
 });
 
-// List for /reset command and then delete the conversation state
+// List for /reset command and then delete the reminders list
 app.message('/reset', async (context: TurnContext, state: ApplicationTurnState) => {
-    state.conversation.delete();
+    cancelAllReminders();
     await context.sendActivity(responses.reset());
 });
 
@@ -157,13 +169,12 @@ app.adaptiveCards.actionSubmit("cancelReminder", async (context: TurnContext, st
     
     if (!id) throw new Error("Reminder id not found in action execute data object.");
     
-    if (!REMINDERS[id]) {
-        await context.sendActivity("Could not find the cancel to delete");
-        return;
+    if (REMINDERS[id]) {
+        cancelReminder(id);
+        await context.sendActivity(`Successfully deleted reminder: ${data.description}`)
+    } else {
+        await context.sendActivity(`Reminder does not exist. Updating reminder list`)
     }
-
-    cancelReminder(id);
-    await context.sendActivity(`Successfully deleted reminder: ${data.description}`)
 
     let card = getRemindersCard(getReminderList())
     const message = MessageFactory.attachment(CardFactory.adaptiveCard(card))
@@ -256,7 +267,13 @@ function addReminder(context: TurnContext, state: ApplicationTurnState, reminder
 
 function cancelReminder(id: string): void {   
     delete REMINDERS[id]
+
+    CRON_JOBS[id].stop();
     delete CRON_JOBS[id]
+}
+
+function cancelAllReminders(){
+    getReminderList().forEach(reminder => cancelReminder(reminder.id))
 }
 
 function getDate(date: string) : Moment | undefined {

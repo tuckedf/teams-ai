@@ -5,8 +5,8 @@
     "id": "<<MICROSOFT_APP_OR_BOT_ID>>",
     "packageName": "com.package.name",
     "name": {
-        "short": "LightBot",
-        "full": "Light Bot"
+        "short": "ReminderBot",
+        "full": "Reminder Bot"
     },
     "developer": {
         "name": "Microsoft",
@@ -16,28 +16,18 @@
         "termsOfUseUrl": "https://www.microsoft.com/en-us/legal/terms-of-use"
     },
     "description": {
-        "short": "Sample bot that controls a light",
-        "full": "Sample bot that controls a light"
+        "short": "Reminders manager",
+        "full": "Sample bot that manages reminders for you."
     },
     "icons": {
         "outline": "outline.png",
         "color": "color.png"
     },
     "accentColor": "#FFFFFF",
-    "staticTabs": [
-        {
-            "entityId": "conversations",
-            "scopes": ["personal"]
-        },
-        {
-            "entityId": "about",
-            "scopes": ["personal"]
-        }
-    ],
     "bots": [
         {
             "botId": "<<YOUR_BOT_ID>>",
-            "scopes": ["personal", "team", "groupChat"],
+            "scopes": ["personal"],
             "isNotificationOnly": false,
             "supportsCalling": false,
             "supportsVideo": false,

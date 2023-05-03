@@ -1,6 +1,4 @@
-import { Moment } from "moment";
 import { Reminder } from "."
-import moment = require("moment");
 
 export const getRemindersCard = (reminderList: Reminder[]) => { 
     let card: any = reminderListCardTemplate();
@@ -119,7 +117,8 @@ export const getReminderCard = (description: string) => ({
             "text": "Reminder",
             "wrap": true,
             "style": "heading",
-            "isSubtle": true
+            "isSubtle": true,
+            "weight": "Bolder",
         },
         {
             "type": "Container",
@@ -135,7 +134,6 @@ export const getReminderCard = (description: string) => ({
             "minHeight": "50px",
             "verticalContentAlignment": "Center",
             "bleed": true,
-            "style": "accent"
         }
     ]
 })
