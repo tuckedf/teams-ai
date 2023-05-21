@@ -75,7 +75,7 @@ Proceed to Add the bot in Teams.
 
 ## Exercise 3: Microsoft Teams Conversational Bot with the model - Travel Bot
 
-This is a conversational bot for Microsoft Teams that thinks it's is an expert in the travel industry with over 20 years experience. It will ask user the destination they're planning to visit and give them a detailed description of their destination and suggest some things to see and do. 
+This is a conversational bot for Microsoft Teams that thinks it's is an expert in the travel industry with over 20 years experience. It will ask the user the destination they're planning to visit and give them a detailed description of their destination and suggest some things to see and do. 
 
 The bot uses the `text-davinci-003` model to chat with Teams users and respond in a polite and respectful manner, staying within the scope of the conversation.
 
@@ -102,11 +102,11 @@ Even though this is a travel bot, it will be able to answer more than just trave
 1. "Tell me about the upcomming US Elections"
 2. "When was Canada founded?"
 
-This is because the Travel bot is simply a proxy between the user and OpenAI model `text-davinci-003`. Obviously this is not a good thing since the conversation is out of scope. We will see later on in this lab how to prevent this from happening. To do that we must first understand how this works.
+This is because the bot is simply a proxy between the user and OpenAI model `text-davinci-003`. Obviously this is not a good thing since the conversation can go out of scope. We will see later on in this lab how to prevent this from happening. To do that we must first understand how this works.
 
 ### Step 2: How it Works
 
-In simple terms, When a user sends a message to Travel bot. It is, within the bot web server, injected into a prompt template and passed into the `text-davinci-003` model. The response is then returned to the user in Teams. 
+In simple terms, the users message is sent to the bot server, and then injected into a prompt template and passed into the `text-davinci-003` model. The response is then returned to the user in Teams. 
 
 Open the `src/promps/chat/skprompt.txt` file to find descriptive prompt engineering that, in plain language and with minor training, instructs the model how the bot should conduct itself and facilitate conversation:
 
@@ -139,9 +139,9 @@ AI: There are many famous Sushi restaurants all over Japan. Which cities are you
 
 Notice that the model remembered the user's specified destination Japan when asking which cities the user is planning to visit in the 6th message.
 
-##### View logs of your interaction with the travel bot
+##### View rendered prompt in every interaction
 
-In the Visual Studio code terminal, you can see the rendered prompt that is passed to the model in every interaction. Notice how the history and user's input is injected in the bottom of the prompt.
+In the Visual Studio code terminal, you can see the rendered prompt that is passed to the model in every interaction. Notice how the history and user's input is injected in the end of the prompt.
 
 ![Image](./assets/TravelBot003.png)
 
@@ -186,13 +186,121 @@ Notice that in the `ai` object, the `'chat'` prompt is specified. This is a fold
 const promptManager = new DefaultPromptManager<ApplicationTurnState>(path.join(__dirname, '../src/prompts'));
 ```
 
-### Step 3: Extend the Prompt to work to prevent out of scope conversations
+### Step 3: Extend the prompt to prevent out of scope conversations
 
-Instructions for extending the prompt to work with adaptive cards.
+As we saw in Step 1, the bot is a proxy between the user and Open AI's `text-davinci-003` model. Since the prompt guides the model's behavior we have to update the prompt to instruct it to ignore out of scope messages from the user. Here's one way we can do that:
 
-### Step 4: Extend the Prompt to work with Adaptive Cards
+Add the following line to the `skprompt.txt` file in the `src/prompts/chat` folder before `${{history}}` and after the initial paragraph.
 
-### Step 5: Rewrite the prompt to use actions (optional)
+```
+The assistant should not entertain any questions or discussions that is not travel-related, or in the expertise of a travel industry expert.
+```
+
+Now restart with node.js application by going opening the `index.ts` file in Visual Studio Code and doing `Ctrl + s`. By saving the file, the `nodemon` instance will restart the node.js application without having to run the `F5` flow. 
+
+Once this is done, interact with the bot and try having a discussion that is not travel related (i.e out of scope):
+
+1. "Tell me about the upcoming US elections"
+2. "When was Canada founded?"
+
+You should get a response along the lines of:
+
+```"I'm sorry, I'm not able to answer questions that are not related to travel. Where are you planning to visit?"```
+
+### Step 4: Extend the Travel bot send Adaptive Cards
+
+OpenAI's GPT models like `text-davinci-003` are particular good at creating JSON objects when given a basic template. In this step, we will extend the the prompt we have so far by showing it an example of an Adaptive Card JSON we expect the model to return. Here's the updated prompt:
+
+```json
+The following is a conversation with an AI assistant. 
+The assistant can respond with Adaptive Cards.
+The assistant is an expert in the travel industry with over 20 years experience.
+The assistant should not entertain any questions or discussions that is not travel-related, or in the expertise of a travel industry expert.
+The assistant should greet the user and ask them the destination they're planning to visit.
+Upon learning the users destination, the assistant should give them a detailed description of their destination and suggest some things to see and do.
+The assistant should ask the user what kind of activities they enjoy or places they like to see so they can better tailor their recommendations to the user.
+When the user is finished building their itinerary respond with an adaptive card based on this template. Each activity should be a separate TextBlock. Bold the activity title and include a description:
+{
+    "type": "AdaptiveCard",
+    "version": "1.4",
+    "body": [
+        {
+            "type": "TextBlock",
+            "text": "${destination} Trip",
+            "size": "large",
+            "weight": "bolder"
+        },
+        {
+            "type": "Container",
+            "separator": true,
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "Day 1",
+                    "size": "medium",
+                    "weight": "bolder"
+                },
+                {
+                    "type": "TextBlock",
+                    "text": "• **Site 1** Description",
+                    "wrap": true
+                }
+            ]
+        },
+        {
+            "type": "Container",
+            "separator": true,
+            "items": [
+                {
+                    "type": "TextBlock",
+                    "text": "Day 2",
+                    "size": "medium",
+                    "weight": "bolder"
+                },
+                {
+                    "type": "TextBlock",
+                    "text": "• **Site 1** Description",
+                     "wrap": true
+                }
+            ]
+        }
+    ]
+}
+
+{{$history}}
+Human: {{$input}}
+AI: 
+```
+
+Notice that the updated prompt is the same except there's two new instructions:
+
+1. "The assistant can respond with Adaptive Cards."
+2. "When the user is finished building their itinerary respond with an adaptive card based on this template. Each activity should be a separate TextBlock. Bold the activity title and include a description: ..."
+
+Now update your application to use the updated prompt. Simply go to the `index.ts` file and update the app instance to use `'chat-adaptiveCard'` for the prompt instead of `'chat'`:
+
+```typescript
+// Define the application instance
+const app = new Application<ApplicationTurnState>({
+    storage,
+    ai: {
+        planner,
+        promptManager,
+        prompt: 'chat-adaptiveCard', // updated from `chat`
+        history: { // the AI module manages the conversation history
+            assistantHistoryType: 'text',
+            maxTurns: 10, 
+            maxTokens: 1000
+        }
+    }
+});
+```
+
+Now save the `index.ts` file and wait for the node.js application to restart. 
+
+Once that's done, the Travel bot should return adaptive cards. Here's an example interaction:
+
+![Image](./assets/TravelBot005.png)
 
 ## Exercise 3: Next Steps
 

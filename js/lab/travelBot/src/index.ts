@@ -77,7 +77,7 @@ type ApplicationTurnState = DefaultTurnState<DefaultConversationState, DefaultUs
 const planner = new AzureOpenAIPlanner({
     apiKey: process.env.OPENAI_API_KEY,
     endpoint: process.env.OPENAI_ENDPOINT,
-    defaultModel: 'gpt-35-turbo',
+    defaultModel: 'text-davinci-003',
     logRequests: true,
 })
 
