@@ -2,6 +2,8 @@
 
 The lab module introduces users to a brand new Teams AI Library. Participants will have the opportunity to run the provided sample code and witness the seamless integration of LLM AI within a Teams Bot. By leveraging LLM AI, the bot will be able to engage in natural and intelligent conversations, making it an ideal tool for enhancing user experiences in various scenarios. This lab module aims to provide developers with hands-on experience in building AI-powered Teams Bots.
 
+_NOTE:_ This lab is written in Typescript/Javascript. However you do not need prior knowledge of these languages to complete this module. The C# .NET version of the Teams AI library is currently in development. 
+
 ## Exercise 1: Setting up the Project
 
 In this exercise you will be setting up the sample bot.
@@ -119,7 +121,7 @@ Open the `src/promps/chat/skprompt.txt` file to find descriptive prompt engineer
     User: {{$input}}
     Assistant: 
 
-Note that `{{$history}}` populates the conversation history and `{{$input}}` populates the user's latest message into the prompt. These values are retrieved from the program in runtime.
+_NOTE_: `{{$history}}` populates the conversation history and `{{$input}}` populates the user's latest message into the prompt. These values are retrieved from the program in runtime.
 
 It is important to pass in the conversation history to the model since its response will depend solely on the prompt passed into the model. Here's an example of how the model uses the historical context:
 
@@ -295,10 +297,38 @@ Once that's done, the Travel bot should return adaptive cards. Here's an example
 
 ## Exercise 3: Next Steps
 
-### Overview
+In this lab we covered the following topics:
+1. Starting a Teams app using the Teams Toolkit extension in Visual Studio Code.
+2. Interacting with a Teams bot that is hooked up to the `text-davinci-003` LLM AI model.
+3. A look at the scaffolding code for the new Teams AI library.
+4. Sneak peek into prompt templating (think `{{$history}}` and `{{$input}}`).
+5. Prompt engineering to prevent out of scope conversations.
+6. Exploring `text-davinci-003`'s ability to generate Adaptive Cards.
 
-Overview of the next steps.
+Here are further resources to look at:
+
+* [Teams AI SDK](https://github.com/microsoft/teams-ai)
+* [INSTRUCT - Making LLM’s Do Anything You Want](https://medium.com/@ickman/instruct-making-llms-do-anything-you-want-ff4259d4b91) 
+* [Travel Bot Sample Code](https://github.com/microsoft/teams-ai/tree/kavin/msbuild-lab/js/lab/travelBot)
+* [Lab Instructions](https://github.com/microsoft/teams-ai/blob/kavin/msbuild-lab/js/lab/travelBot/Lab.md)
+
 
 ### Take the Lab Home with You
 
-Instructions for taking the lab home with you.
+If you want to take the lab project files home with you here are the steps you can take to upload this project to Github:
+
+Open the terminal in Visual Studio Code. And then follow these steps to upload a project to GitHub:
+
+1. `git init`
+
+2. `git add .`
+
+3. `git commit -m "Add all files`
+
+4. `git remote add origin https://github.com/yourusername/your-repo-name.git` where `your-repo-name` is an empty repository on Github. 
+
+5. To upload a project from scratch you first have to do `git pull origin master`.
+
+6. Then do `git push origin master`
+
+_NOTE:_ You may be asked to login with you Github credentials to complete the steps.
