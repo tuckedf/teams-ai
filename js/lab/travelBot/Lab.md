@@ -1,8 +1,8 @@
-## Overview
-
 The lab module introduces users to a brand new Teams AI Library. Participants will have the opportunity to run the provided sample code and witness the seamless integration of LLM AI within a Teams Bot. By leveraging LLM AI, the bot will be able to engage in natural and intelligent conversations, making it an ideal tool for enhancing user experiences in various scenarios. This lab module aims to provide developers with hands-on experience in building AI-powered Teams Bots.
 
-_NOTE:_ This lab is written in Typescript/Javascript. However you do not need prior knowledge of these languages to complete this module. The C# .NET version of the Teams AI library is currently in development. 
+_NOTE:_ This lab is written in Typescript/Javascript. However you do not need prior knowledge of these languages to complete this module. The C# .NET version of the Teams AI library is currently in development.
+
+You can also find the lab instruction here: * [Lab Instructions](https://github.com/microsoft/teams-ai/blob/kavin/msbuild-lab/js/lab/travelBot/Lab.md)
 
 ## Exercise 1: Setting up the Project
 
