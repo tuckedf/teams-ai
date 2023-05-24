@@ -4,7 +4,7 @@ _NOTE:_ This lab is written in Typescript/Javascript. However you do not need pr
 
 You can also find the lab instruction here: * [Lab Instructions](https://github.com/microsoft/teams-ai/blob/kavin/msbuild-lab/js/lab/travelBot/Lab.md)
 
-## Exercise 1: Setting up the Project
+## Exercise 1: Setting up the Project (for Lab computers in MS Build Conference)
 
 In this exercise you will be setting up the sample bot.
 
@@ -26,12 +26,12 @@ In this exercise you will be setting up the sample bot.
 
 ![Image](./assets/Setup05.png)
 
-Now go to the `Resources` tab and grab the `Key` and `Endpoint` from the `Azure Portal` section. Set the value in the following way:
+Now go to Azure Portal, Login with the Azure credentials provided in the `Resources` tabe. Navigate to the only Azure OpenAI resource and grab the `KEY1` and `Endpoint`. Use it to sign in to @ Set the value in the following way:
 
-    SECRET_OPENAI_API_KEY=Key
+    SECRET_OPENAI_API_KEY=KEY1
     SECRET_OPENAI_ENDPOINT=Endpoint
 
-So if the `Key` was `9bc5c422-0e6f-40d3-9fb7-880f99d2f390`. And `Endpoint` was `https://lab132.openai.azure.com`. The file should look like this:
+So if the `KEY1` was `9bc5c422-0e6f-40d3-9fb7-880f99d2f390`. And `Endpoint` was `https://lab132.openai.azure.com`. The file should look like this:
 
     SECRET_BOT_PASSWORD=
     SECRET_OPENAI_API_KEY=9bc5c422-0e6f-40d3-9fb7-880f99d2f390
