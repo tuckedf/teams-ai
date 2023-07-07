@@ -64,7 +64,7 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
     console.log('\nTo test your bot in Teams, sideload the app manifest.json within Teams Apps.');
 });
 
-import { AI, Application, DefaultPromptManager, DefaultTurnState, OpenAIPlanner } from '@microsoft/teams-ai';
+import { AI, Application, AzureOpenAIPlanner, DefaultPromptManager, DefaultTurnState, OpenAIPlanner } from '@microsoft/teams-ai';
 import * as responses from './responses';
 
 interface ConversationState {
@@ -73,14 +73,15 @@ interface ConversationState {
 type ApplicationTurnState = DefaultTurnState<ConversationState>;
 type TData = Record<string, any>;
 
-if (!process.env.OpenAIKey) {
-    throw new Error('Missing environment variables - please check that OpenAIKey is set.');
+if (!process.env.AzureOpenAIKey) {
+    throw new Error('Missing environment variables - please check that AzureOpenAIKey is set.');
 }
 
 // Create AI components
-const planner = new OpenAIPlanner<ApplicationTurnState>({
-    apiKey: process.env.OpenAIKey,
-    defaultModel: 'gpt-3.5-turbo',
+const planner = new AzureOpenAIPlanner<ApplicationTurnState>({
+    apiKey: process.env.AzureOpenAIKey,
+    endpoint: process.env.AzureOpenAIEndpoint!,
+    defaultModel: 'gpt-4-32k',
     logRequests: true
 });
 const promptManager = new DefaultPromptManager<ApplicationTurnState>(path.join(__dirname, '../src/prompts'));

@@ -73,7 +73,8 @@ import {
     DefaultConversationState,
     DefaultUserState,
     DefaultTempState,
-    DefaultPromptManager
+    DefaultPromptManager,
+    AzureOpenAIPlanner
 } from '@microsoft/teams-ai';
 import * as responses from './responses';
 
@@ -92,14 +93,15 @@ interface TempState extends DefaultTempState {
 
 type ApplicationTurnState = DefaultTurnState<ConversationState, UserState, TempState>;
 
-if (!process.env.OpenAIKey) {
-    throw new Error('Missing OpenAIKey environment variable');
+if (!process.env.AzureOpenAIKey) {
+    throw new Error('Missing AzureOpenAIKey environment variable');
 }
 
 // Create AI components
-const planner = new OpenAIPlanner<ApplicationTurnState>({
-    apiKey: process.env.OpenAIKey!,
-    defaultModel: 'text-davinci-003',
+const planner = new AzureOpenAIPlanner<ApplicationTurnState>({
+    apiKey: process.env.AzureOpenAIKey!,
+    endpoint: process.env.AzureOpenAIEndpoint!,
+    defaultModel: 'gpt-4-32k',
     logRequests: true
 });
 const promptManager = new DefaultPromptManager<ApplicationTurnState>(path.join(__dirname, '../src/prompts'));
