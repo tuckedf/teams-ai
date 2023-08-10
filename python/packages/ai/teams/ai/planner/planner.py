@@ -5,10 +5,14 @@ Licensed under the MIT License.
 
 # pylint: skip-file
 
+from botbuilder.core import TurnContext
+
 from abc import ABC, abstractclassmethod
 from typing import Any, Callable, Union
+from teams.ai.planner.ai_history_options import AIHistoryOptions
 from teams.ai.turn_state import TurnState
-
+from teams.ai.prompts import PromptTemplate
+from teams.ai.planner.plan import Plan
 
 class Planner(ABC):
     """

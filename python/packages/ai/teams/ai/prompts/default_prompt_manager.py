@@ -7,7 +7,8 @@ from typing import Callable
 
 from botbuilder.core import TurnContext
 from teams.ai.turn_state import TurnState
-from semantic_kernel import Kernel, PromptTemplateConfig, PromptTemplate
+from teams.ai.prompts import PromptTemplate
+import semantic_kernel as sk
 from semantic_kernel.skill_definition import sk_function
 
 SK_CONFIG_FILE_NAME = "config.json"
@@ -51,7 +52,7 @@ class DefaultPromptManager:
 
     async def render_prompt(
         self, context: TurnContext, state: TurnState, name_or_template: str | PromptTemplate
-    ) -> str:
+    ) -> PromptTemplate:
         """
         Renders the given prompt template.
 
@@ -60,21 +61,22 @@ class DefaultPromptManager:
         :param name_or_template: The name of the prompt template or the prompt template itself.
         """
         prompt_template: PromptTemplate
-        sk: Kernel = Kernel()
+        kernel: sk.Kernel = sk.Kernel()
         if isinstance(name_or_template, str):
             prompt_folder: str = os.path.join(self._prompts_folder, name_or_template)
-            prompt_config: PromptTemplateConfig = PromptTemplateConfig.from_json(
+            prompt_config: sk.PromptTemplateConfig = sk.PromptTemplateConfig.from_json(
                 self._read_file(os.path.join(prompt_folder, SK_CONFIG_FILE_NAME))
             )
             prompt_text: str = self._read_file(os.path.join(prompt_folder, SK_PROMPT_FILE_NAME))
-            prompt_template: PromptTemplate = PromptTemplate(
-                prompt_text, sk.prompt_template_engine, prompt_config
+            prompt_template: sk.PromptTemplate = sk.PromptTemplate(
+                prompt_text, kernel.prompt_template_engine, prompt_config
             )
         else:
             prompt_template = name_or_template
 
-        context = self._create_kernel_context(sk, context, state)
-        return await prompt_template.render_async(context)
+        context = self._create_kernel_context(kernel, context, state)
+        final_prompt = await prompt_template.render_async(context)
+
 
     def _read_file(self, file_path: str) -> str:
         if not os.path.exists(file_path):
@@ -83,7 +85,7 @@ class DefaultPromptManager:
             return file.read()
 
     def _create_kernel_context(
-        self, kernel: Kernel, context: TurnContext, state: TurnState
+        self, kernel: sk.Kernel, context: TurnContext, state: TurnState
     ) -> None:
         for function_name, function in self._functions.items():
 
