@@ -4,7 +4,7 @@ Licensed under the MIT License.
 """
 
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Optional
 from .completion_config import CompletionConfig
 
 
@@ -24,7 +24,7 @@ class PromptTemplateConfig:
     completion: CompletionConfig
     "completion settings for the prompt"
 
-    default_backends: Union[List[str], None]
+    default_backends: Optional[List[str]]
     """
     optional: array of backends (models) to use for the prompt
     note: passing the name of a model to use here will override the default model used by a planner

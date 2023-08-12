@@ -7,8 +7,7 @@ import pytest
 
 from botbuilder.core import TurnContext
 from teams.ai.turn_state import TurnState
-from teams.ai.prompts import DefaultPromptManager
-from semantic_kernel import (Kernel, PromptTemplateConfig, PromptTemplate)
+from teams.ai.prompts import DefaultPromptManager, PromptTemplate, PromptTemplateConfig
 
 TEST_ASSERTS_FOLDER = "tests\\prompts\\test_assets"
 
@@ -38,18 +37,15 @@ class TestDefaultPromptManager:
         mocked_turn_state = self._mock_turn_state()
 
         # render prompt success when template is passed
-        prompt_text = await prompt_manager.render_prompt(
+        prompt = await prompt_manager.render_prompt(
             mocked_turn_context, mocked_turn_state, "happy_path")
-        assert prompt_text == "test prompt"
+        assert prompt.text == "test prompt"
 
         # render prompt success when template is passed
-        sk = Kernel()
-        prompt_template = PromptTemplate("test prompt",
-                                         sk.prompt_template_engine,
-                                         PromptTemplateConfig())
-        prompt_text = await prompt_manager.render_prompt(
+        prompt_template = PromptTemplate("test prompt", {})
+        prompt = await prompt_manager.render_prompt(
             mocked_turn_context, mocked_turn_state, prompt_template)
-        assert prompt_text == "test prompt"
+        assert prompt.text == "test prompt"
 
         # render prompt fail when config file is missing
         with pytest.raises(Exception):

@@ -3,11 +3,12 @@ Copyright (c) Microsoft Corporation. All rights reserved.
 Licensed under the MIT License.
 """
 import os
+import json
 from typing import Callable
 
 from botbuilder.core import TurnContext
 from teams.ai.turn_state import TurnState
-from teams.ai.prompts import PromptTemplate
+from teams.ai.prompts import PromptTemplate, PromptTemplateConfig
 import semantic_kernel as sk
 from semantic_kernel.skill_definition import sk_function
 
@@ -64,19 +65,19 @@ class DefaultPromptManager:
         kernel: sk.Kernel = sk.Kernel()
         if isinstance(name_or_template, str):
             prompt_folder: str = os.path.join(self._prompts_folder, name_or_template)
-            prompt_config: sk.PromptTemplateConfig = sk.PromptTemplateConfig.from_json(
+            prompt_config: PromptTemplateConfig = json.loads(
                 self._read_file(os.path.join(prompt_folder, SK_CONFIG_FILE_NAME))
             )
             prompt_text: str = self._read_file(os.path.join(prompt_folder, SK_PROMPT_FILE_NAME))
-            prompt_template: sk.PromptTemplate = sk.PromptTemplate(
-                prompt_text, kernel.prompt_template_engine, prompt_config
+            prompt_template: PromptTemplate = PromptTemplate(
+                prompt_text, prompt_config
             )
         else:
             prompt_template = name_or_template
 
         context = self._create_kernel_context(kernel, context, state)
-        final_prompt = await prompt_template.render_async(context)
-
+        rendered_prompt = await prompt_template.render_async(context)
+        return PromptTemplate(rendered_prompt, prompt_template.config)
 
     def _read_file(self, file_path: str) -> str:
         if not os.path.exists(file_path):
