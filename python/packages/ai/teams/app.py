@@ -21,6 +21,7 @@ from botbuilder.core import Bot, BotFrameworkAdapter, InvokeResponse, TurnContex
 from botbuilder.schema import Activity, ActivityTypes
 
 from teams.ai import AI, TurnState
+from teams.adaptive_cards.adaptive_cards import AdaptiveCards
 
 from .activity_type import ActivityType, ConversationUpdateType
 from .app_error import ApplicationError
@@ -45,6 +46,7 @@ class Application(Bot, Generic[StateT]):
     """
 
     _ai: Optional[AI[StateT]]
+    _adaptive_card: AdaptiveCards[StateT]
     _options: ApplicationOptions
     _adapter: Optional[BotFrameworkAdapter] = None
     _typing_delay = 1000
@@ -61,6 +63,7 @@ class Application(Bot, Generic[StateT]):
         self._ai = AI(options.ai, options.logger) if options.ai else None
         self._options = options
         self._routes = []
+        self._adaptive_card = AdaptiveCards[StateT](self._routes, options.adaptive_cards.actionSubmitFiler)
 
         if options.long_running_messages and (not options.auth or not options.bot_app_id):
             raise ApplicationError(
@@ -95,6 +98,13 @@ class Application(Bot, Generic[StateT]):
         The application's configured options.
         """
         return self._options
+    
+    @property
+    def adaptive_cards(self) -> AdaptiveCards:
+        """
+        Access the application's adaptive cards functionalities.
+        """
+        return self._adaptive_card
 
     def activity(self, type: ActivityType):
         """

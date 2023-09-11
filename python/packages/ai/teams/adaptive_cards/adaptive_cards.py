@@ -6,7 +6,7 @@ import re
 from typing import Any, Awaitable, Callable, Generic, List, Pattern, TypeVar, Union
 
 from botbuilder.core import TurnContext
-from botbuilder.schema import ActivityTypes, AdaptiveCardInvokeResponse, InvokeResponse
+from botbuilder.schema import ActivityTypes, AdaptiveCardInvokeResponse, InvokeResponse, Activity
 
 from teams.ai import TurnState
 from teams.route import Route
@@ -23,7 +23,7 @@ class AdaptiveCards(Generic[StateT]):
     _action_submit_filter: str
 
     def __init__(
-        self, route_registry: List[Route[StateT]], action_submit_filter: str = "verb"
+        self, route_registry: List[Route[StateT]], action_submit_filter: str
     ) -> None:
         self._route_registry = route_registry
         self._action_submit_filter = action_submit_filter
@@ -86,7 +86,9 @@ class AdaptiveCards(Generic[StateT]):
                             type="application/vnd.microsoft.card.adaptive",
                             value=result,
                         )
-                    await context.send_activity(InvokeResponse(status=200, body=response))
+                    await context.send_activity(Activity(
+                        type="invokeResponse",
+                        value=InvokeResponse(status=200, body=response)))
                 return True
 
             self._route_registry.append(Route[StateT](__selector__, __handler__))
@@ -172,7 +174,7 @@ class AdaptiveCards(Generic[StateT]):
                 and context.activity.name == SEARCH_INVOKE_NAME
             ):
                 activity_dataset = (
-                    context.activity.value.dataset if context.activity.value else None
+                    context.activity.value["dataset"] if context.activity.value else None
                 )
                 # when verb is a function
                 if callable(dataset):
@@ -209,10 +211,12 @@ class AdaptiveCards(Generic[StateT]):
                         "type": "application/vnd.microsoft.search.searchResponse",
                         "value": {"results": result},
                     }
-                    await context.send_activity(InvokeResponse(status=200, body=response))
+                    await context.send_activity(Activity(
+                        type="invokeResponse",
+                        value=InvokeResponse(status=200, body=response)))
                 return True
 
             self._route_registry.append(Route[StateT](__selector__, __handler__))
             return func
 
-        return False
+        return __call__
