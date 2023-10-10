@@ -19,6 +19,11 @@
 
 <!-- /code_chunk_output -->
 
+## Quick start: run the app in VS Code
+1. Run `poetry install`. (Install [poetry](https://python-poetry.org/docs/#installation) first if you don't have it.)
+1. Switch to the newly created virtual environment when Python extension notifies it detects a new virtual environment.
+1. Press `F5` to launch the app.
+
 ## Summary
 
 This is a conversational bot for Microsoft Teams that thinks it's a Chef to help you cook Teams apps. The bot uses the text-davinci-003 model to chat with Teams users and respond in a polite and respectful manner, staying within the scope of the conversation.
